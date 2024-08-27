@@ -15,9 +15,9 @@ app = FastAPI()
 web3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
 
 # Endereço do contrato Storage (substitua pelo seu)
-contract_address = "0x743Efd1d0beaD80333bC5EE9cE95Ec8df0609b06"
-from_address = "0x09954f862B58F93D4EC58B438778Be461D80b2f8"
-private_key = "0xefce32d11b68482b235242a67c8c83ea9de0c4462c92853a1117279e37dd4dc2"
+contract_address = "0x430DdD63bdBf319BB252A810e7264223DC576da6"
+from_address = "0x4b2192635eE0Fe1330a1ce7A5a74Df23F93BB9ff"
+private_key = "0xbd469b5b0ad146bb8640e28896962f6c3605d44e21478cc885e8f0c8d5c801aa"
 # ABI do contrato Storage (substitua pelo seu)
 contract_abi = [
     {
@@ -140,6 +140,7 @@ def verify_item(object):
     hash_hex = hash_obj.hexdigest()
     # Chamada de função de leitura; não requer transação
     is_valid = contract.functions.verifyItem(object["_id"], hash_hex).call()
+    print (is_valid)
     return is_valid
 
 def objectid_is_valid(oid):
