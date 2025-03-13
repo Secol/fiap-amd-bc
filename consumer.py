@@ -2,16 +2,22 @@ import pika # Biblioteca usada para se conectar e interagir com o RabbitMQ.
 from web3 import Web3 # Biblioteca web3.py, que é utilizada para interagir com a blockchain Ethereum.
 import json # Módulo usado para manipular dados no formato JSON.
 import hashlib # Módulo hashlib fornece implementações de algoritmos de hash, como SHA-256.
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+rabbitmq_url = os.environ.get("RABBITMQ_HOST", "localhost")
 
 # Estabelece uma conexão com um nó Ethereum usando o provedor HTTP. Neste caso, está conectando-se a um nó local Ganache.
 web3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
 
 # Especifica o endereço do contrato inteligente implantado na blockchain.
-contract_address = "0x430DdD63bdBf319BB252A810e7264223DC576da6"
+contract_address = os.environ.get("CONTRACT_ADDRESS")
 # Endereço da conta que será usada para enviar transações para o contrato inteligente
-from_address = "0x4b2192635eE0Fe1330a1ce7A5a74Df23F93BB9ff"
+from_address = os.environ.get("ACCOUNT_ADDRESS")
 # Chave privada associada ao endereço acima. Esta chave é usada para assinar transações antes de enviá-las para a blockchain.
-private_key = "0xbd469b5b0ad146bb8640e28896962f6c3605d44e21478cc885e8f0c8d5c801aa"
+private_key = os.environ.get("PRIVATE_KEY")
 
 # Define a ABI (Application Binary Interface) do contrato, que é necessária para interagir com ele.
 # A ABI descreve os métodos e eventos do contrato, incluindo seus parâmetros e tipos de retorno.
@@ -151,7 +157,7 @@ def register_item(item_id, hash):
     return tx_receipt.transactionHash.hex()
 
 # Estabelece uma conexão com um servidor RabbitMQ rodando localmente e autentica-se com um usuário e senha.
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', credentials=pika.PlainCredentials('user', 'password')))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_url, credentials=pika.PlainCredentials('user', 'password')))
 # Cria um canal de comunicação dentro da conexão RabbitMQ.
 channel = connection.channel()
 
@@ -170,17 +176,17 @@ def callback(ch, method, properties, body):
     hash_obj.update(string.encode())
     # Obter o hash hexadecimal
     hash_hex = hash_obj.hexdigest()
-    print("[x] Received %r" % body)
+    print("Received %r" % body)
     # Chama a função `register_item` para registrar o ID do item e o hash na blockchain.
     tx_receipt = register_item(dicionario["_id"], hash_hex)
     # retorna o recibo da transação
-    print(print("[x] Tx hash %r" % tx_receipt))
+    print("Tx hash %r" % tx_receipt)
 
 # Informa ao RabbitMQ que o canal deseja consumir mensagens da fila 'produtos.lote.update' usando a função de callback definida.
 # O parâmetro `auto_ack=True` confirma automaticamente as mensagens assim que são recebidas.
 channel.basic_consume(queue='produtos.lote.update', on_message_callback=callback, auto_ack=True)
 
 # Imprime uma mensagem no console indicando que o programa está esperando por mensagens.
-print(' [*] Aguardando mensagens. CTRL+C para finalizar.')
+print('Aguardando mensagens. CTRL+C para finalizar.')
 # Inicia o loop de consumo de mensagens, aguardando novas mensagens na fila e chamando a função de callback para processá-las.
 channel.start_consuming()

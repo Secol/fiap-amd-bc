@@ -1,5 +1,11 @@
 from web3 import Web3  # Importa a biblioteca Web3 para interagir com a blockchain
 import time  # Importa a biblioteca time para usar a função sleep
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+contract_address = os.environ.get("CONTRACT_ADDRESS")
 
 ganache_url = "http://127.0.0.1:7545"  # Define a URL do Ganache
 web3 = Web3(Web3.HTTPProvider(ganache_url))  # Conecta ao Ganache usando a URL definida
@@ -115,7 +121,7 @@ contract_abi = [  # Define a ABI (Application Binary Interface) do contrato
       "constant": True
     }
 ]
-contract_address = "0x430DdD63bdBf319BB252A810e7264223DC576da6"  # Define o endereço do contrato
+contract_address = "0x2cf158Ae3E76AfC6fB358492C117348D223b0ccC"  # Define o endereço do contrato
 
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)  # Cria uma instância do contrato
 

@@ -8,16 +8,24 @@ from web3 import Web3
 import json
 import hashlib
 import pika
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
 # Conectar ao provedor Ethereum (pode ser um nó local, Infura, Alchemy, etc.)
 web3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
 
+mongodb_url = os.environ.get("MONGODB_HOST", "localhost")
+rabbitmq_url = os.environ.get("RABBITMQ_HOST", "localhost")
+
 # Endereço do contrato Storage (substitua pelo seu)
-contract_address = "0x430DdD63bdBf319BB252A810e7264223DC576da6"
-from_address = "0x4b2192635eE0Fe1330a1ce7A5a74Df23F93BB9ff"
-private_key = "0xbd469b5b0ad146bb8640e28896962f6c3605d44e21478cc885e8f0c8d5c801aa"
+contract_address = os.environ.get("CONTRACT_ADDRESS")
+from_address = os.environ.get("ACCOUNT_ADDRESS")
+private_key = os.environ.get("PRIVATE_KEY")
+
 # ABI do contrato Storage (substitua pelo seu)
 contract_abi = [
     {
@@ -154,7 +162,7 @@ class UpdateModel(BaseModel):
     numero_do_lote: str
     status: str
 
-client = MongoClient('mongodb://user:password@localhost:27017/')
+client = MongoClient(f'mongodb://user:password@{mongodb_url}:27017/')
 db = client['main_db']
 collection = db['lotes']
 
@@ -167,7 +175,7 @@ def json_encoder(o):
 
 def publish_message(message):
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost', credentials=pika.PlainCredentials('user', 'password'))
+        pika.ConnectionParameters(host=rabbitmq_url, credentials=pika.PlainCredentials('user', 'password'))
     )
     channel = connection.channel()
     channel.queue_declare(queue='produtos.lote.update')
@@ -176,7 +184,7 @@ def publish_message(message):
 
 @app.post("/update/")
 async def update(update_model: UpdateModel):
-    result = update_model.dict()
+    result = update_model.model_dump()
     result['dt_update'] = datetime.now().isoformat()
     insert_result = collection.insert_one(result)
     if insert_result.inserted_id:

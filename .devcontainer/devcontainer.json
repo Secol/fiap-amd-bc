@@ -1,0 +1,9 @@
+{
+	"name": "DevContainer",
+	"dockerComposeFile": [
+		"../devcontainer-compose.yml",
+	],
+	"service": "devcontainer",
+	"workspaceFolder": "/workspace",
+	"forwardPorts": [8000],
+}

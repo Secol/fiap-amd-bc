@@ -17,6 +17,16 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongodb_data:/data/db
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/workspace:cached
+    command: sleep infinity
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MONGODB_HOST: mongodb
 
 volumes:
   mongodb_data:
